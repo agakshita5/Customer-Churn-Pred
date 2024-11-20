@@ -1,14 +1,13 @@
 from flask import Flask, redirect, url_for, render_template, request, session, flash
-from sklearn.preprocessing import OneHotEncoder
 import pandas as pd
 import pickle
 import os
-from datetime import timedelta
+# from datetime import timedelta
 
 # port = int(os.environ.get('PORT', 5000))
 app = Flask(__name__)
 app.secret_key = os.urandom(24) 
-# app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)  # Set session timeout duration
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)  # Set session timeout duration
 
 def calculate_risk_level(features):
     risk_score = 0
@@ -44,7 +43,7 @@ def home():
 def predict():
     print("Route hit: /predict") # Add this line to confirm the route is hit
     if request.method == 'POST':
-        # session.permanent = True
+        session.permanent = True
         try:
             print("POST request received") # Confirm it's a POST request
             with open("pred_churn.pkl", "rb") as f:
@@ -106,6 +105,6 @@ def result():
     #     return redirect(url_for("predict"))
     return render_template('result.html', res=res, risk_level=rl, clv=clv)
 
-# if __name__ == "__main__":
-#     # app.run(debug=True, host='0.0.0.0', port=port)
-    # app.run(debug=True, port=5000)
+if __name__ == "__main__":
+    # app.run(debug=True, host='0.0.0.0', port=port)
+    app.run(debug=True)
