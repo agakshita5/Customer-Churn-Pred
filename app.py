@@ -3,10 +3,12 @@ from sklearn.preprocessing import OneHotEncoder
 import pandas as pd
 import pickle
 import os
+from datetime import timedelta
 
 # port = int(os.environ.get('PORT', 5000))
 app = Flask(__name__)
 app.secret_key = os.urandom(24) 
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)  # Set session timeout duration
 
 def calculate_risk_level(features):
     risk_score = 0
@@ -41,6 +43,7 @@ def home():
 @app.route("/predict", methods=['POST', 'GET'])
 def predict():
     if request.method == 'POST':
+        session.permanent = True
         try:
             with open("pred_churn.pkl", "rb") as f:
                 model = pickle.load(f)
@@ -76,6 +79,7 @@ def predict():
             session['risk_level'] = user_data['risk_level']
             session['clv'] = clv
 
+            print(f"Session Data: {session['res']}, {session['risk_level']}, {session['clv']}")
             flash(f"Customer churn: {session['res']}, Risk Level: {session['risk_level']}, CLV: ${session['clv']:.2f}", "success")
             return redirect(url_for("result"))
         except Exception as e:
