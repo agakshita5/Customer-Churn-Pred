@@ -5,7 +5,7 @@ import pickle
 import os
 from datetime import timedelta
 
-# port = int(os.environ.get('PORT', 5000))
+port = int(os.environ.get('PORT', 5000))
 app = Flask(__name__)
 app.secret_key = os.urandom(24) 
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)  # Set session timeout duration
@@ -42,9 +42,11 @@ def home():
 
 @app.route("/predict", methods=['POST', 'GET'])
 def predict():
+    print("Route hit: /predict") # Add this line to confirm the route is hit
     if request.method == 'POST':
         session.permanent = True
         try:
+            print("POST request received") # Confirm it's a POST request
             with open("pred_churn.pkl", "rb") as f:
                 model = pickle.load(f)
             with open("ohe_encoder.pkl", "rb") as f:
@@ -83,6 +85,7 @@ def predict():
             flash(f"Customer churn: {session['res']}, Risk Level: {session['risk_level']}, CLV: ${session['clv']:.2f}", "success")
             return redirect(url_for("result"))
         except Exception as e:
+            print(f"Error: {str(e)}")  # Add this line to print the error message
             flash(f"Error: {str(e)}")
             return render_template('predict.html', error=str(e), form_data=request.form)
     else:
@@ -90,11 +93,17 @@ def predict():
 
 @app.route('/result')
 def result():
+    print("Route hit: /result")  # Confirm the route is hit
     res = session.get("res")
     rl = session.get("risk_level")
     clv = session.get("clv")
-    if res is None:
+    print(f"Session data: res={res}, risk_level={rl}, clv={clv}")  # Print session data to debug
+
+    if res is None or rl is None or clv is None:
+        flash("Error: No result data found. Please try submitting the form again.", "danger")
         return redirect(url_for("predict"))
+    # if res is None:
+    #     return redirect(url_for("predict"))
     return render_template('result.html', res=res, risk_level=rl, clv=clv)
 
 if __name__ == "__main__":
