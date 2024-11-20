@@ -9,6 +9,11 @@ app = Flask(__name__)
 app.secret_key = os.urandom(24) 
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)  # Set session timeout duration
 
+with open("pred_churn.pkl", "rb") as f:
+    model = pickle.load(f)
+with open("ohe_encoder.pkl", "rb") as f:
+    ohe = pickle.load(f)
+
 def calculate_risk_level(features):
     risk_score = 0
     if features['tenure'] < 12:
@@ -35,9 +40,11 @@ def calculate_clv(features):
     clv = avg_monthly_revenue * expected_lifetime
     return round(clv, 2)
 
+
 @app.route("/")
 def home():
     return render_template('home.html')
+
 
 @app.route("/predict", methods=['POST', 'GET'])
 def predict():
@@ -46,10 +53,6 @@ def predict():
         session.permanent = True
         try:
             print("POST request received") # Confirm it's a POST request
-            with open("pred_churn.pkl", "rb") as f:
-                model = pickle.load(f)
-            with open("ohe_encoder.pkl", "rb") as f:
-                ohe = pickle.load(f)
 
             user_data = {
                 'age': int(request.form['age']),
@@ -90,6 +93,7 @@ def predict():
     else:
         return render_template('predict.html')
 
+
 @app.route('/result')
 def result():
     print("Route hit: /result")  # Confirm the route is hit
@@ -104,6 +108,7 @@ def result():
     # if res is None:
     #     return redirect(url_for("predict"))
     return render_template('result.html', res=res, risk_level=rl, clv=clv)
+
 
 if __name__ == "__main__":
     # app.run(debug=True, host='0.0.0.0', port=port)
