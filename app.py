@@ -105,11 +105,8 @@ def result():
     if res is None or rl is None or clv is None:
         flash("Error: No result data found. Please try submitting the form again.", "danger")
         return redirect(url_for("predict"))
-    # if res is None:
-    #     return redirect(url_for("predict"))
     return render_template('result.html', res=res, risk_level=rl, clv=clv)
 
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=port)
-    # app.run(debug=True)
