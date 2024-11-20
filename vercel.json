@@ -2,11 +2,9 @@
     "version": 2,
     "builds": [
       {
-        "src": "app.py",
+        "src":"./index.py",
         "use": "@vercel/python",
-        "config": {
-          "maxDuration" : 60
-        }
+        "config":{"runtime":"python3.8"}
       }
     ],
     "routes": [
